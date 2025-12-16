@@ -1,0 +1,58 @@
+# variable -> dynamic valu assigment
+---
+- name: insatll LEMP stack using variable
+  hosts: localhost
+  become: yes
+  #define variabkae and assign values
+  vars: 
+    web_pkg: nginx # hard coding
+    db_pkg: mariadb105-server
+    php_pkg: 
+     - php
+     - php-fpm
+    web_service: nginx
+    db_service: mariadb
+    php_service: php-fpm
+    web_file_path: /usr/share/nginx/html/index.php
+  tasks:
+  - name: Stop service httpd, if started
+    ansible.builtin.service:
+      name: httpd
+      state: stopped
+  - name: install
+    ansible.builtin.dnf:
+      name: "{{web_pkg}}"
+      state: present
+  - name: insatll mariadb
+    ansible.builtin.dnf:   
+      name: "{{db_pkg}}"
+      state: present  
+  - name: insatll php
+    ansible.builtin.dnf:   
+      name: "{{php_pkg}}"
+      state: present  
+  - name: start and enabled nginx
+    ansible.builtin.systemd_service:
+      name: "{{web_service}}"
+      enabled: true
+      state: started
+  - name: start and enabled mariadb
+    ansible.builtin.systemd_service:
+      name: "{{db_service}}"
+      enabled: true
+  - name: start and enabled nginx
+    ansible.builtin.systemd_service:
+      name: "{{php_service}}"
+      enabled: true
+  - name: Read-write git checkout from github
+    ansible.builtin.git:
+      repo: https://github.com/Shivam20214082/static-game.git
+      dest: /usr/share/nginx/html/game
+      force: yes
+  - name: deployphp page  
+    ansible.builtin.copy:  
+      dest: "{{web_file_path}}"
+      content: 
+       <?php
+        phpinfo();
+        ?>
